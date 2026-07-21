@@ -1,0 +1,449 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+generator openapi {
+  provider = "prisma-openapi"
+  output   = "../openapi"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Asset {
+  id                String             @id @default(uuid())
+  serialNumber      String?
+  unitId            String
+  barcode           String?
+  status            AssetStatus        @default(AVAILABLE)
+  parentAssetId     String?
+  productId         String
+  companyId         String
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  company           Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  parentAsset       Asset?             @relation("AssetHierarchy", fields: [parentAssetId], references: [id])
+  childAssets       Asset[]            @relation("AssetHierarchy")
+  product           Product            @relation(fields: [productId], references: [id])
+  bookingLineAssets BookingLineAsset[]
+  invoiceLineAssets InvoiceLineAsset[]
+  maintenanceLogs   MaintenanceLog[]
+
+  @@unique([companyId, unitId])
+  @@unique([companyId, barcode])
+  @@unique([companyId, serialNumber])
+}
+
+model AuditLog {
+  id        String  @id @default(uuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+}
+
+model Booking {
+  id           String        @id @default(uuid())
+  status       BookingStatus @default(QUOTATION)
+  startDate    DateTime
+  endDate      DateTime
+  clientId     String
+  address      String?
+  companyId    String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  client       Client        @relation(fields: [clientId], references: [id])
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  bookingLines BookingLine[]
+  invoices     Invoice[]
+  timesheets   Timesheet[]
+}
+
+model BookingLine {
+  id                String             @id @default(uuid())
+  bookingId         String
+  productId         String
+  quantity          Int                @default(1)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  booking           Booking            @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  product           Product            @relation(fields: [productId], references: [id])
+  bookingLineAssets BookingLineAsset[]
+  memberAssignments MemberAssignment[]
+  invoiceLines      InvoiceLine[]
+  subRentals        SubRental[]
+  timesheets        Timesheet[]
+}
+
+model BookingLineAsset {
+  id            String      @id @default(uuid())
+  bookingLineId String
+  assetId       String
+  scannedIn     DateTime?
+  scannedOut    DateTime?
+  priceOverride Decimal?    @db.Decimal(10, 2)
+  asset         Asset       @relation(fields: [assetId], references: [id])
+  bookingLine   BookingLine @relation(fields: [bookingLineId], references: [id], onDelete: Cascade)
+
+  @@unique([bookingLineId, assetId])
+}
+
+model BundleComponent {
+  id              String   @id @default(uuid())
+  parentProductId String
+  childProductId  String
+  quantity        Int      @default(1)
+  priceOverride   Decimal? @db.Decimal(10, 2)
+  child           Product  @relation("ChildProduct", fields: [childProductId], references: [id], onDelete: Cascade)
+  parent          Product  @relation("ParentProduct", fields: [parentProductId], references: [id], onDelete: Cascade)
+
+  @@unique([parentProductId, childProductId])
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String
+  companyId String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  company   Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  products  Product[]
+
+  @@unique([companyId, name])
+}
+
+model Client {
+  id              String    @id @default(uuid())
+  name            String?
+  email           String?
+  phone           String?
+  company         String?
+  address         String?
+  companyId       String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  bookings        Booking[]
+  companyRelation Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  invoices        Invoice[]
+
+  @@unique([companyId, email])
+}
+
+model Company {
+  id          String       @id @default(uuid())
+  name        String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  assets      Asset[]
+  auditLogs   AuditLog[]
+  bookings    Booking[]
+  categories  Category[]
+  clients     Client[]
+  invoices    Invoice[]
+  products    Product[]
+  suppliers   Supplier[]
+  timesheets  Timesheet[]
+  slug        String
+  logo        String?
+  metadata    String?
+  members     Member[]
+  invitations Invitation[]
+
+  @@unique([slug])
+  @@map("Company")
+}
+
+model MemberAssignment {
+  id            String      @id @default(uuid())
+  bookingLineId String
+  memberId      String
+  role          String?
+  plannedStart  DateTime
+  plannedEnd    DateTime
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  bookingLine   BookingLine @relation(fields: [bookingLineId], references: [id], onDelete: Cascade)
+  member        Member      @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([memberId, bookingLineId])
+}
+
+model Invoice {
+  id            String        @id @default(uuid())
+  invoiceNumber String
+  invoiceStatus InvoiceStatus @default(DRAFT)
+  issueDate     DateTime      @default(now())
+  dueDate       DateTime
+  bookingId     String?
+  clientId      String
+  subTotal      Decimal       @db.Decimal(10, 2)
+  vatAmount     Decimal       @db.Decimal(10, 2)
+  totalAmount   Decimal       @db.Decimal(10, 2)
+  companyId     String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  booking       Booking?      @relation(fields: [bookingId], references: [id])
+  client        Client        @relation(fields: [clientId], references: [id])
+  company       Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  invoiceLines  InvoiceLine[]
+
+  @@unique([companyId, invoiceNumber])
+}
+
+model InvoiceLine {
+  id                String             @id @default(uuid())
+  invoiceId         String
+  bookingLineId     String?
+  productId         String?
+  description       String
+  quantity          Int                @default(1)
+  unitPrice         Decimal            @db.Decimal(10, 2)
+  vatPercentage     Decimal            @default(0) @db.Decimal(10, 2)
+  bookingLine       BookingLine?       @relation(fields: [bookingLineId], references: [id])
+  invoice           Invoice            @relation(fields: [invoiceId], references: [id])
+  product           Product?           @relation(fields: [productId], references: [id])
+  invoiceLineAssets InvoiceLineAsset[]
+}
+
+model InvoiceLineAsset {
+  id            String      @id @default(uuid())
+  invoiceLineId String
+  assetId       String
+  priceOverride Decimal?    @db.Decimal(10, 2)
+  asset         Asset       @relation(fields: [assetId], references: [id])
+  invoiceLine   InvoiceLine @relation(fields: [invoiceLineId], references: [id])
+
+  @@unique([invoiceLineId, assetId])
+}
+
+model MaintenanceLog {
+  id               String    @id @default(uuid())
+  assetId          String
+  issueDescription String
+  repairAction     String?
+  startDate        DateTime  @default(now())
+  endDate          DateTime?
+  repairedBy       String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  asset            Asset     @relation(fields: [assetId], references: [id])
+}
+
+model Product {
+  id           String            @id @default(uuid())
+  name         String
+  description  String?
+  type         ProductType       @default(SIMPLE)
+  brand        String
+  modelNumber  String?
+  dayPrice     Decimal           @db.Decimal(10, 2)
+  categoryId   String
+  companyId    String
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  assets       Asset[]
+  bookingLines BookingLine[]
+  partOfBundle BundleComponent[] @relation("ChildProduct")
+  bundleItems  BundleComponent[] @relation("ParentProduct")
+  invoiceLines InvoiceLine[]
+  category     Category          @relation(fields: [categoryId], references: [id])
+  company      Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+model SubRental {
+  id             String      @id @default(uuid())
+  supplierId     String
+  bookingLineId  String
+  quantity       Int         @default(1)
+  costPrice      Decimal     @db.Decimal(10, 2)
+  referenceCode  String?
+  deliveryStatus String      @default("PENDING")
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  bookingLine    BookingLine @relation(fields: [bookingLineId], references: [id])
+  supplier       Supplier    @relation(fields: [supplierId], references: [id])
+}
+
+model Supplier {
+  id         String      @id @default(uuid())
+  name       String
+  email      String?
+  phone      String?
+  address    String?
+  companyId  String
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  subRentals SubRental[]
+  company    Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+model Timesheet {
+  id             String          @id @default(uuid())
+  memberId       String
+  bookingId      String
+  bookingLineId  String?
+  notes          String?
+  status         TimesheetStatus @default(DRAFT)
+  startTime      DateTime
+  endTime        DateTime
+  breakMinutes   Int             @default(0)
+  travelMinutes  Int             @default(0)
+  travelDistance Int             @default(0)
+  hourlyCostRate Decimal         @db.Decimal(10, 2)
+  hourlySellRate Decimal         @db.Decimal(10, 2)
+  companyId      String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  booking        Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  bookingLine    BookingLine?    @relation(fields: [bookingLineId], references: [id])
+  company        Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  member         Member          @relation(fields: [memberId], references: [id])
+}
+
+model User {
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  accounts      Account[]
+  sessions      Session[]
+
+  role       String?
+  banned     Boolean?  @default(false)
+  banReason  String?
+  banExpires DateTime?
+
+  members     Member[]
+  invitations Invitation[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  impersonatedBy String?
+
+  activeOrganizationId String?
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+enum AssetStatus {
+  AVAILABLE
+  RENTED
+  MAINTENANCE
+  LOST
+  RETIRED
+}
+
+enum BookingStatus {
+  QUOTATION
+  CONFIRMED
+  ACTIVE
+  RETURNED
+  CANCELLED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CREDITED
+}
+
+enum ProductType {
+  SIMPLE
+  BUNDLE
+  KIT
+}
+
+enum TimesheetStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+model Member {
+  id                String             @id
+  organizationId    String
+  company           Company            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role              String             @default("member")
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  phone             String
+  address           String
+  isFreelancer      Boolean            @default(false)
+  defaultHourRate   Decimal            @db.Decimal(10, 2)
+  memberAssignments MemberAssignment[]
+  timesheets        Timesheet[]
+
+  @@index([organizationId])
+  @@index([userId])
+  @@map("Member")
+}
+
+model Invitation {
+  id             String   @id
+  organizationId String
+  company        Company  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  email          String
+  role           String?
+  status         String   @default("pending")
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
+  inviterId      String
+  user           User     @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([email])
+  @@map("Invitation")
+}

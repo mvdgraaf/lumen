@@ -1,0 +1,1102 @@
+openapi: 3.1.0
+info:
+  title: Prisma API
+  description: ""
+  version: 1.0.0
+paths: {}
+components:
+  schemas:
+    Asset:
+      type: object
+      properties:
+        id:
+          type: string
+        serialNumber:
+          type: string
+        unitId:
+          type: string
+        barcode:
+          type: string
+        status:
+          $ref: "#/components/schemas/AssetStatus"
+        parentAssetId:
+          type: string
+        productId:
+          type: string
+        companyId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        company:
+          $ref: "#/components/schemas/Company"
+        parentAsset:
+          $ref: "#/components/schemas/Asset"
+        childAssets:
+          type: array
+          items:
+            $ref: "#/components/schemas/Asset"
+        product:
+          $ref: "#/components/schemas/Product"
+        bookingLineAssets:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingLineAsset"
+        invoiceLineAssets:
+          type: array
+          items:
+            $ref: "#/components/schemas/InvoiceLineAsset"
+        maintenanceLogs:
+          type: array
+          items:
+            $ref: "#/components/schemas/MaintenanceLog"
+      required:
+        - id
+        - unitId
+        - status
+        - productId
+        - companyId
+        - createdAt
+        - updatedAt
+        - company
+        - childAssets
+        - product
+        - bookingLineAssets
+        - invoiceLineAssets
+        - maintenanceLogs
+    AuditLog:
+      type: object
+      properties:
+        id:
+          type: string
+        companyId:
+          type: string
+        company:
+          $ref: "#/components/schemas/Company"
+      required:
+        - id
+        - companyId
+        - company
+    Booking:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          $ref: "#/components/schemas/BookingStatus"
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        clientId:
+          type: string
+        address:
+          type: string
+        companyId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        client:
+          $ref: "#/components/schemas/Client"
+        company:
+          $ref: "#/components/schemas/Company"
+        bookingLines:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingLine"
+        invoices:
+          type: array
+          items:
+            $ref: "#/components/schemas/Invoice"
+        timesheets:
+          type: array
+          items:
+            $ref: "#/components/schemas/Timesheet"
+      required:
+        - id
+        - status
+        - startDate
+        - endDate
+        - clientId
+        - companyId
+        - createdAt
+        - updatedAt
+        - client
+        - company
+        - bookingLines
+        - invoices
+        - timesheets
+    BookingLine:
+      type: object
+      properties:
+        id:
+          type: string
+        bookingId:
+          type: string
+        productId:
+          type: string
+        quantity:
+          type: integer
+          format: int32
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        booking:
+          $ref: "#/components/schemas/Booking"
+        product:
+          $ref: "#/components/schemas/Product"
+        bookingLineAssets:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingLineAsset"
+        memberAssignments:
+          type: array
+          items:
+            $ref: "#/components/schemas/MemberAssignment"
+        invoiceLines:
+          type: array
+          items:
+            $ref: "#/components/schemas/InvoiceLine"
+        subRentals:
+          type: array
+          items:
+            $ref: "#/components/schemas/SubRental"
+        timesheets:
+          type: array
+          items:
+            $ref: "#/components/schemas/Timesheet"
+      required:
+        - id
+        - bookingId
+        - productId
+        - quantity
+        - createdAt
+        - updatedAt
+        - booking
+        - product
+        - bookingLineAssets
+        - memberAssignments
+        - invoiceLines
+        - subRentals
+        - timesheets
+    BookingLineAsset:
+      type: object
+      properties:
+        id:
+          type: string
+        bookingLineId:
+          type: string
+        assetId:
+          type: string
+        scannedIn:
+          type: string
+          format: date-time
+        scannedOut:
+          type: string
+          format: date-time
+        priceOverride:
+          type: number
+          format: double
+        asset:
+          $ref: "#/components/schemas/Asset"
+        bookingLine:
+          $ref: "#/components/schemas/BookingLine"
+      required:
+        - id
+        - bookingLineId
+        - assetId
+        - asset
+        - bookingLine
+    BundleComponent:
+      type: object
+      properties:
+        id:
+          type: string
+        parentProductId:
+          type: string
+        childProductId:
+          type: string
+        quantity:
+          type: integer
+          format: int32
+        priceOverride:
+          type: number
+          format: double
+        child:
+          $ref: "#/components/schemas/Product"
+        parent:
+          $ref: "#/components/schemas/Product"
+      required:
+        - id
+        - parentProductId
+        - childProductId
+        - quantity
+        - child
+        - parent
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        companyId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        company:
+          $ref: "#/components/schemas/Company"
+        products:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
+      required:
+        - id
+        - name
+        - companyId
+        - createdAt
+        - updatedAt
+        - company
+        - products
+    Client:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        company:
+          type: string
+        address:
+          type: string
+        companyId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        bookings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Booking"
+        companyRelation:
+          $ref: "#/components/schemas/Company"
+        invoices:
+          type: array
+          items:
+            $ref: "#/components/schemas/Invoice"
+      required:
+        - id
+        - companyId
+        - createdAt
+        - updatedAt
+        - bookings
+        - companyRelation
+        - invoices
+    Company:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        assets:
+          type: array
+          items:
+            $ref: "#/components/schemas/Asset"
+        auditLogs:
+          type: array
+          items:
+            $ref: "#/components/schemas/AuditLog"
+        bookings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Booking"
+        categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/Category"
+        clients:
+          type: array
+          items:
+            $ref: "#/components/schemas/Client"
+        invoices:
+          type: array
+          items:
+            $ref: "#/components/schemas/Invoice"
+        products:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
+        suppliers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Supplier"
+        timesheets:
+          type: array
+          items:
+            $ref: "#/components/schemas/Timesheet"
+        slug:
+          type: string
+        logo:
+          type: string
+        metadata:
+          type: string
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/Member"
+        invitations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Invitation"
+      required:
+        - id
+        - name
+        - createdAt
+        - updatedAt
+        - assets
+        - auditLogs
+        - bookings
+        - categories
+        - clients
+        - invoices
+        - products
+        - suppliers
+        - timesheets
+        - slug
+        - members
+        - invitations
+    MemberAssignment:
+      type: object
+      properties:
+        id:
+          type: string
+        bookingLineId:
+          type: string
+        memberId:
+          type: string
+        role:
+          type: string
+        plannedStart:
+          type: string
+          format: date-time
+        plannedEnd:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        bookingLine:
+          $ref: "#/components/schemas/BookingLine"
+        member:
+          $ref: "#/components/schemas/Member"
+      required:
+        - id
+        - bookingLineId
+        - memberId
+        - plannedStart
+        - plannedEnd
+        - createdAt
+        - updatedAt
+        - bookingLine
+        - member
+    Invoice:
+      type: object
+      properties:
+        id:
+          type: string
+        invoiceNumber:
+          type: string
+        invoiceStatus:
+          $ref: "#/components/schemas/InvoiceStatus"
+        issueDate:
+          type: string
+          format: date-time
+        dueDate:
+          type: string
+          format: date-time
+        bookingId:
+          type: string
+        clientId:
+          type: string
+        subTotal:
+          type: number
+          format: double
+        vatAmount:
+          type: number
+          format: double
+        totalAmount:
+          type: number
+          format: double
+        companyId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        booking:
+          $ref: "#/components/schemas/Booking"
+        client:
+          $ref: "#/components/schemas/Client"
+        company:
+          $ref: "#/components/schemas/Company"
+        invoiceLines:
+          type: array
+          items:
+            $ref: "#/components/schemas/InvoiceLine"
+      required:
+        - id
+        - invoiceNumber
+        - invoiceStatus
+        - issueDate
+        - dueDate
+        - clientId
+        - subTotal
+        - vatAmount
+        - totalAmount
+        - companyId
+        - createdAt
+        - updatedAt
+        - client
+        - company
+        - invoiceLines
+    InvoiceLine:
+      type: object
+      properties:
+        id:
+          type: string
+        invoiceId:
+          type: string
+        bookingLineId:
+          type: string
+        productId:
+          type: string
+        description:
+          type: string
+        quantity:
+          type: integer
+          format: int32
+        unitPrice:
+          type: number
+          format: double
+        vatPercentage:
+          type: number
+          format: double
+        bookingLine:
+          $ref: "#/components/schemas/BookingLine"
+        invoice:
+          $ref: "#/components/schemas/Invoice"
+        product:
+          $ref: "#/components/schemas/Product"
+        invoiceLineAssets:
+          type: array
+          items:
+            $ref: "#/components/schemas/InvoiceLineAsset"
+      required:
+        - id
+        - invoiceId
+        - description
+        - quantity
+        - unitPrice
+        - vatPercentage
+        - invoice
+        - invoiceLineAssets
+    InvoiceLineAsset:
+      type: object
+      properties:
+        id:
+          type: string
+        invoiceLineId:
+          type: string
+        assetId:
+          type: string
+        priceOverride:
+          type: number
+          format: double
+        asset:
+          $ref: "#/components/schemas/Asset"
+        invoiceLine:
+          $ref: "#/components/schemas/InvoiceLine"
+      required:
+        - id
+        - invoiceLineId
+        - assetId
+        - asset
+        - invoiceLine
+    MaintenanceLog:
+      type: object
+      properties:
+        id:
+          type: string
+        assetId:
+          type: string
+        issueDescription:
+          type: string
+        repairAction:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        repairedBy:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        asset:
+          $ref: "#/components/schemas/Asset"
+      required:
+        - id
+        - assetId
+        - issueDescription
+        - startDate
+        - createdAt
+        - updatedAt
+        - asset
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        type:
+          $ref: "#/components/schemas/ProductType"
+        brand:
+          type: string
+        modelNumber:
+          type: string
+        dayPrice:
+          type: number
+          format: double
+        categoryId:
+          type: string
+        companyId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        assets:
+          type: array
+          items:
+            $ref: "#/components/schemas/Asset"
+        bookingLines:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingLine"
+        partOfBundle:
+          type: array
+          items:
+            $ref: "#/components/schemas/BundleComponent"
+        bundleItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/BundleComponent"
+        invoiceLines:
+          type: array
+          items:
+            $ref: "#/components/schemas/InvoiceLine"
+        category:
+          $ref: "#/components/schemas/Category"
+        company:
+          $ref: "#/components/schemas/Company"
+      required:
+        - id
+        - name
+        - type
+        - brand
+        - dayPrice
+        - categoryId
+        - companyId
+        - createdAt
+        - updatedAt
+        - assets
+        - bookingLines
+        - partOfBundle
+        - bundleItems
+        - invoiceLines
+        - category
+        - company
+    SubRental:
+      type: object
+      properties:
+        id:
+          type: string
+        supplierId:
+          type: string
+        bookingLineId:
+          type: string
+        quantity:
+          type: integer
+          format: int32
+        costPrice:
+          type: number
+          format: double
+        referenceCode:
+          type: string
+        deliveryStatus:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        bookingLine:
+          $ref: "#/components/schemas/BookingLine"
+        supplier:
+          $ref: "#/components/schemas/Supplier"
+      required:
+        - id
+        - supplierId
+        - bookingLineId
+        - quantity
+        - costPrice
+        - deliveryStatus
+        - createdAt
+        - updatedAt
+        - bookingLine
+        - supplier
+    Supplier:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        address:
+          type: string
+        companyId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        subRentals:
+          type: array
+          items:
+            $ref: "#/components/schemas/SubRental"
+        company:
+          $ref: "#/components/schemas/Company"
+      required:
+        - id
+        - name
+        - companyId
+        - createdAt
+        - updatedAt
+        - subRentals
+        - company
+    Timesheet:
+      type: object
+      properties:
+        id:
+          type: string
+        memberId:
+          type: string
+        bookingId:
+          type: string
+        bookingLineId:
+          type: string
+        notes:
+          type: string
+        status:
+          $ref: "#/components/schemas/TimesheetStatus"
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        breakMinutes:
+          type: integer
+          format: int32
+        travelMinutes:
+          type: integer
+          format: int32
+        travelDistance:
+          type: integer
+          format: int32
+        hourlyCostRate:
+          type: number
+          format: double
+        hourlySellRate:
+          type: number
+          format: double
+        companyId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        booking:
+          $ref: "#/components/schemas/Booking"
+        bookingLine:
+          $ref: "#/components/schemas/BookingLine"
+        company:
+          $ref: "#/components/schemas/Company"
+        member:
+          $ref: "#/components/schemas/Member"
+      required:
+        - id
+        - memberId
+        - bookingId
+        - status
+        - startTime
+        - endTime
+        - breakMinutes
+        - travelMinutes
+        - travelDistance
+        - hourlyCostRate
+        - hourlySellRate
+        - companyId
+        - createdAt
+        - updatedAt
+        - booking
+        - company
+        - member
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        emailVerified:
+          type: boolean
+        image:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        accounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Account"
+        sessions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Session"
+        role:
+          type: string
+        banned:
+          type: boolean
+        banReason:
+          type: string
+        banExpires:
+          type: string
+          format: date-time
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/Member"
+        invitations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Invitation"
+      required:
+        - id
+        - name
+        - email
+        - emailVerified
+        - createdAt
+        - updatedAt
+        - accounts
+        - sessions
+        - members
+        - invitations
+    Session:
+      type: object
+      properties:
+        id:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        token:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        ipAddress:
+          type: string
+        userAgent:
+          type: string
+        userId:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+        impersonatedBy:
+          type: string
+        activeOrganizationId:
+          type: string
+      required:
+        - id
+        - expiresAt
+        - token
+        - createdAt
+        - updatedAt
+        - userId
+        - user
+    Account:
+      type: object
+      properties:
+        id:
+          type: string
+        accountId:
+          type: string
+        providerId:
+          type: string
+        userId:
+          type: string
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        idToken:
+          type: string
+        accessTokenExpiresAt:
+          type: string
+          format: date-time
+        refreshTokenExpiresAt:
+          type: string
+          format: date-time
+        scope:
+          type: string
+        password:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        user:
+          $ref: "#/components/schemas/User"
+      required:
+        - id
+        - accountId
+        - providerId
+        - userId
+        - createdAt
+        - updatedAt
+        - user
+    Verification:
+      type: object
+      properties:
+        id:
+          type: string
+        identifier:
+          type: string
+        value:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - identifier
+        - value
+        - expiresAt
+        - createdAt
+        - updatedAt
+    Member:
+      type: object
+      properties:
+        id:
+          type: string
+        organizationId:
+          type: string
+        company:
+          $ref: "#/components/schemas/Company"
+        userId:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+        role:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        phone:
+          type: string
+        address:
+          type: string
+        isFreelancer:
+          type: boolean
+        defaultHourRate:
+          type: number
+          format: double
+        memberAssignments:
+          type: array
+          items:
+            $ref: "#/components/schemas/MemberAssignment"
+        timesheets:
+          type: array
+          items:
+            $ref: "#/components/schemas/Timesheet"
+      required:
+        - id
+        - organizationId
+        - company
+        - userId
+        - user
+        - role
+        - createdAt
+        - updatedAt
+        - phone
+        - address
+        - isFreelancer
+        - defaultHourRate
+        - memberAssignments
+        - timesheets
+    Invitation:
+      type: object
+      properties:
+        id:
+          type: string
+        organizationId:
+          type: string
+        company:
+          $ref: "#/components/schemas/Company"
+        email:
+          type: string
+        role:
+          type: string
+        status:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        inviterId:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+      required:
+        - id
+        - organizationId
+        - company
+        - email
+        - status
+        - expiresAt
+        - createdAt
+        - inviterId
+        - user
+    AssetStatus:
+      type: string
+      enum:
+        - AVAILABLE
+        - RENTED
+        - MAINTENANCE
+        - LOST
+        - RETIRED
+    BookingStatus:
+      type: string
+      enum:
+        - QUOTATION
+        - CONFIRMED
+        - ACTIVE
+        - RETURNED
+        - CANCELLED
+    InvoiceStatus:
+      type: string
+      enum:
+        - DRAFT
+        - SENT
+        - PAID
+        - OVERDUE
+        - CREDITED
+    ProductType:
+      type: string
+      enum:
+        - SIMPLE
+        - BUNDLE
+        - KIT
+    TimesheetStatus:
+      type: string
+      enum:
+        - DRAFT
+        - SUBMITTED
+        - APPROVED
+        - REJECTED
+  responses: {}
+  parameters: {}
+  examples: {}
+  requestBodies: {}
+  headers: {}
+  securitySchemes: {}
+  links: {}
+  callbacks: {}
+tags: []
+servers: []
