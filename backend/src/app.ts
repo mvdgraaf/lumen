@@ -10,9 +10,9 @@ import * as fs from 'node:fs';
 import dotenv from 'dotenv';
 dotenv.config({path: path.join(process.cwd(), '.env')});
 
-import { testConnection } from "./lib/db.js";
+import { testConnection } from "./lib/db.lib";
 import api from "./routes/index.route.js";
-import { auth } from "./lib/auth.js";
+import { authLib } from "./lib/auth.lib";
 import { toNodeHandler } from "better-auth/node";
 
 const app = express();
@@ -20,7 +20,7 @@ const app = express();
 const base = YAML.load(path.join(process.cwd(), 'openapi', 'openapi.yaml'));
 const openapiPathDir = path.join(process.cwd(), 'openapi');
 
-const authSchema = await auth.api.generateOpenAPISchema();
+const authSchema = await authLib.api.generateOpenAPISchema();
 
 for (const [route, methods] of Object.entries(authSchema.paths)) {
     base.paths[`/api/auth${route}`] = methods;
@@ -62,9 +62,9 @@ function stripNulls(obj: any) {
 stripNulls(base);
 
 // gemergde spec ook naar disk schrijven, voor gebruik door openapi-typescript/openapi-generator
-const outDir = path.join(process.cwd(), 'openapi', 'dist');
+const outDir = path.join(process.cwd(), 'openapi');
 fs.mkdirSync(outDir, { recursive: true });
-fs.writeFileSync(path.join(outDir, 'openapi.yaml'), YAML.stringify(base, 10, 2));
+fs.writeFileSync(path.join(outDir, 'combined.yaml'), YAML.stringify(base, 10, 2));
 
 // --- Middleware ---
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
@@ -74,7 +74,7 @@ app.use(cors({
     credentials: true,
 }));
 
-app.all('/api/auth/{*any}', toNodeHandler(auth));
+app.all('/api/authLib/{*any}', toNodeHandler(authLib));
 
 app.use(express.json());
 app.use(cookieParser());
@@ -86,8 +86,20 @@ app.use(session({
 
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(base));
 app.use('/api', api);
+//
+// app.use((err, req, res, next) => {
+//     console.error(err.stack);
+//
+//     res.status(500).json({
+//         error: {
+//             message: 'Something went wrong',
+//             ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+//         }
+//     });
+// });
 
-await testConnection();
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
+await testConnection()
+const port = 4000
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
 });

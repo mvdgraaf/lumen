@@ -231,12 +231,14 @@ model MaintenanceLog {
 
 model Product {
   id           String            @id @default(uuid())
+  SKU          String?
   name         String
   description  String?
   type         ProductType       @default(SIMPLE)
   brand        String
   modelNumber  String?
   dayPrice     Decimal           @db.Decimal(10, 2)
+  quantity     Int               @default(0)
   categoryId   String
   companyId    String
   createdAt    DateTime          @default(now())
@@ -248,6 +250,8 @@ model Product {
   invoiceLines InvoiceLine[]
   category     Category          @relation(fields: [categoryId], references: [id])
   company      Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, SKU])
 }
 
 model SubRental {
@@ -399,6 +403,7 @@ enum InvoiceStatus {
 
 enum ProductType {
   SIMPLE
+  BULK
   BUNDLE
   KIT
 }

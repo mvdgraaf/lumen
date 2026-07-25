@@ -597,6 +597,8 @@ components:
       properties:
         id:
           type: string
+        SKU:
+          type: string
         name:
           type: string
         description:
@@ -610,6 +612,9 @@ components:
         dayPrice:
           type: number
           format: double
+        quantity:
+          type: integer
+          format: int32
         categoryId:
           type: string
         companyId:
@@ -650,6 +655,7 @@ components:
         - type
         - brand
         - dayPrice
+        - quantity
         - categoryId
         - companyId
         - createdAt
@@ -1081,6 +1087,7 @@ components:
       type: string
       enum:
         - SIMPLE
+        - BULK
         - BUNDLE
         - KIT
     TimesheetStatus:

@@ -1,0 +1,93 @@
+openapi: 3.1.0
+info:
+  title: "Lumen Backstage API"
+  version: 0.1.0
+
+paths:
+  /products:
+    get:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - Products
+      summary: List all products
+      parameters:
+        - name: categoryId
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: brand
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: modelNumber
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ SIMPLE, BULK, BUNDLE, KIT ]
+      responses:
+        '200':
+          description: A list of products.
+        '404':
+          description: No products found.
+
+    post:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - Products
+      summary: Create a product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: true
+              properties:
+                SKU:
+                  type: string
+                name:
+                  type: string
+                description:
+                  type: string
+                type:
+                  type: string
+                  enum: [ SIMPLE, BULK, BUNDLE, KIT ]
+                  default: SIMPLE
+                brand:
+                  type: string
+                modelNumber:
+                  type: string
+                dayPrice:
+                  type: number
+                  format: decimal
+                quantity:
+                  type: integer
+                  default: 0
+                categoryId:
+                  type: string
+            example:
+              name: "Shure SM58"
+              brand: "Shure"
+              type: "SIMPLE"
+              dayPrice: 15.00
+              quantity: 10
+              categoryId: "b3f1c2a0-1234-4a5b-9c6d-abcdef123456"
+      responses:
+        '201':
+          description: The product was created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          description: Invalid request data.
